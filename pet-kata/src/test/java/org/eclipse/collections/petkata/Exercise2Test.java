@@ -21,6 +21,8 @@ import org.eclipse.collections.impl.test.Verify;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.eclipse.collections.petkata.PetType.CAT;
+
 /**
  * In the slides leading up to this exercise you should have learned about the following APIs.
  * <p/>
@@ -50,7 +52,7 @@ public class Exercise2Test extends PetDomainForKata
     @Test
     public void doAnyPeopleHaveCats()
     {
-        Predicate<Person> predicate = null; //replace null with a Predicate lambda which checks for PetType.CAT
+        Predicate<Person> predicate = p -> p.getPetTypes().contains(CAT); //replace null with a Predicate lambda which checks for PetType.CAT
         Assert.assertTrue(this.people.anySatisfy(predicate));
     }
 
@@ -58,21 +60,31 @@ public class Exercise2Test extends PetDomainForKata
     public void doAllPeopleHavePets()
     {
         Predicate<Person> predicate = person -> person.isPetPerson();
-        boolean result = true; //replace with a method call send to this.people that checks if all people have pets
+        boolean result = this.people.noneSatisfy(predicate); //replace with a method call send to this.people that checks if all people have pets
         Assert.assertFalse(result);
     }
 
     @Test
     public void howManyPeopleHaveCats()
     {
-        int count = 0;
+        int count = this.people.count(p -> p.hasPet(CAT));
         Assert.assertEquals(2, count);
     }
 
     @Test
     public void findMarySmith()
     {
-        Person result = null;
+        String firstName = "Mary";
+        String lastName = "Smith";
+        Person result = this.people.select(p -> p.getFirstName().equals(firstName)).select(p -> p.getLastName().equals(lastName)).getFirstOptional().orElseGet(null);
+        Assert.assertEquals(firstName, result.getFirstName());
+        Assert.assertEquals(lastName, result.getLastName());
+    }
+
+    @Test
+    public void findMarySmith3()
+    {
+        Person result = this.people.detectWith(Person::named, "Mary Smith");
         Assert.assertEquals("Mary", result.getFirstName());
         Assert.assertEquals("Smith", result.getLastName());
     }
@@ -80,24 +92,24 @@ public class Exercise2Test extends PetDomainForKata
     @Test
     public void getPeopleWithPets()
     {
-        MutableList<Person> petPeople = this.people; // replace with only the pet owners
+        MutableList<Person> petPeople = this.people.select(Person::isPetPerson); // replace with only the pet owners
         Verify.assertSize(7, petPeople);
     }
 
     @Test
     public void getAllPetTypesOfAllPeople()
     {
-        Function<Person, Iterable<PetType>> function = person -> person.getPetTypes();
-        MutableSet<PetType> petTypes = null;
+        Function<Person, Iterable<PetType>> function = Person::getPetTypes;
+        MutableSet<PetType> petTypes = this.people.flatCollect(function).toSet();
         Assert.assertEquals(
-                Sets.mutable.with(PetType.CAT, PetType.DOG, PetType.TURTLE, PetType.HAMSTER, PetType.BIRD, PetType.SNAKE),
+                Sets.mutable.with(CAT, PetType.DOG, PetType.TURTLE, PetType.HAMSTER, PetType.BIRD, PetType.SNAKE),
                 petTypes);
     }
 
     @Test
     public void getFirstNamesOfAllPeople()
     {
-        MutableList<String> firstNames = null;  // Transform this.people into a list of first names
+        MutableList<String> firstNames = this.people.collect(Person::getFirstName);  // Transform this.people into a list of first names
         Assert.assertEquals(
                 Lists.mutable.with("Mary", "Bob", "Ted", "Jake", "Barry", "Terry", "Harry", "John"),
                 firstNames);
@@ -106,22 +118,22 @@ public class Exercise2Test extends PetDomainForKata
     @Test
     public void doAnyPeopleHaveCatsRefactor()
     {
-        boolean peopleHaveCatsLambda = this.people.anySatisfy(person -> person.hasPet(PetType.CAT));
+        boolean peopleHaveCatsLambda = this.people.anySatisfy(person -> person.hasPet(CAT));
         Assert.assertTrue(peopleHaveCatsLambda);
 
         //use method reference, NOT lambdas, to solve the problem below
-        boolean peopleHaveCatsMethodRef = false;
+        boolean peopleHaveCatsMethodRef = this.people.anySatisfyWith(Person::hasPet, CAT);
         Assert.assertTrue(peopleHaveCatsMethodRef);
     }
 
     @Test
     public void doAllPeopleHaveCatsRefactor()
     {
-        boolean peopleHaveCatsLambda = this.people.allSatisfy(person -> person.hasPet(PetType.CAT));
+        boolean peopleHaveCatsLambda = this.people.allSatisfy(person -> person.hasPet(CAT));
         Assert.assertFalse(peopleHaveCatsLambda);
 
         //use method reference, NOT lambdas, to solve the problem below
-        boolean peopleHaveCatsMethodRef = true;
+        boolean peopleHaveCatsMethodRef = this.people.allSatisfyWith(Person::hasPet, CAT);
         Assert.assertFalse(peopleHaveCatsMethodRef);
     }
 
@@ -129,7 +141,7 @@ public class Exercise2Test extends PetDomainForKata
     public void getPeopleWithCatsRefactor()
     {
         //use method reference, NOT lambdas, to solve the problem below
-        MutableList<Person> peopleWithCatsMethodRef = null;
+        MutableList<Person> peopleWithCatsMethodRef = this.people.selectWith(Person::hasPet, CAT);
         Verify.assertSize(2, peopleWithCatsMethodRef);
     }
 
@@ -137,7 +149,7 @@ public class Exercise2Test extends PetDomainForKata
     public void getPeopleWithoutCatsRefactor()
     {
         //use method reference, NOT lambdas, to solve the problem below
-        MutableList<Person> peopleWithoutCatsMethodRef = null;
+        MutableList<Person> peopleWithoutCatsMethodRef = this.people.rejectWith(Person::hasPet, CAT);
         Verify.assertSize(6, peopleWithoutCatsMethodRef);
     }
 }
