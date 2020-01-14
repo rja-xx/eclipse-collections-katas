@@ -18,6 +18,10 @@ import org.eclipse.collections.impl.test.Verify;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.function.UnaryOperator;
+
+import static org.eclipse.collections.petkata.PetType.CAT;
+
 /**
  * In the slides leading up to this exercise you should have learned about the following APIs.
  * <p/>
@@ -32,7 +36,7 @@ public class Exercise1Test extends PetDomainForKata
     public void getFirstNamesOfAllPeople()
     {
         // Replace null, with a transformation method on MutableList.
-        MutableList<String> firstNames = null; // this.people...
+        MutableList<String> firstNames = this.people.collect(Person::getFirstName); // this.people...
 
         MutableList<String> expectedFirstNames = Lists.mutable.with("Mary", "Bob", "Ted", "Jake", "Barry", "Terry", "Harry", "John");
         Assert.assertEquals(expectedFirstNames, firstNames);
@@ -45,7 +49,7 @@ public class Exercise1Test extends PetDomainForKata
         MutableList<Pet> pets = person.getPets();
 
         // Replace null, with a transformation method on MutableList.
-        MutableList<String> names = null; // pets...
+        MutableList<String> names = pets.collect(Pet::getName); // pets...
 
         Assert.assertEquals("Tabby", names.makeString());
     }
@@ -54,7 +58,16 @@ public class Exercise1Test extends PetDomainForKata
     public void getPeopleWithCats()
     {
         // Replace null, with a positive filtering method on MutableList.
-        MutableList<Person> peopleWithCats = null;  // this.people...
+        MutableList<Person> peopleWithCats = this.people.collectIf(p -> p.getPetTypes().contains(CAT), p -> p);  // this.people...
+
+        Verify.assertSize(2, peopleWithCats);
+    }
+
+    @Test
+    public void getPeopleWithCats2()
+    {
+        // Replace null, with a positive filtering method on MutableList.
+        MutableList<Person> peopleWithCats = this.people.select(p -> p.getPetTypes().contains(CAT));  // this.people...
 
         Verify.assertSize(2, peopleWithCats);
     }
@@ -63,7 +76,7 @@ public class Exercise1Test extends PetDomainForKata
     public void getPeopleWithoutCats()
     {
         // Replace null, with a negative filtering method on MutableList.
-        MutableList<Person> peopleWithoutCats = null;  // this.people...
+        MutableList<Person> peopleWithoutCats = this.people.reject(p -> p.getPetTypes().contains(CAT));  // this.people...
 
         Verify.assertSize(6, peopleWithoutCats);
     }
